@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "25224739336",
+    "project_id": "sample-firebase-ai-app-67e18",
+    "storage_bucket": "sample-firebase-ai-app-67e18.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:25224739336:android:c7d36ff18268e8dceeefbd",
+        "android_client_info": {
+          "package_name": "com.fap.fap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt5wxNAU3Ohhb8ERHp2KQvzfwuRYz6aFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
