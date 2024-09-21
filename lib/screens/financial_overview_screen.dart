@@ -108,7 +108,10 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
     );
   }
 
-  List<PieChartSectionData> _createChartData(List<FinancialRecord> records) {
+  List<PieChartSectionData> _createChartData(
+    List<FinancialRecord> records, 
+    {bool showPercentage = true, bool showAmount = true}) {
+
   // Map ที่ใช้เก็บยอดรวมของแต่ละประเภท
   Map<String, double> dataMap = {
     'รายรับ': 0,
@@ -122,20 +125,32 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
   }
 
   // กำหนดสีสำหรับแต่ละประเภท
-  final List<Color> colors = [Colors.green, Colors.red, Colors.blue];
-  int index = 0;
+  final Map<String, Color> colorMap = {
+    'รายรับ': Colors.green,
+    'รายจ่าย': Colors.red,
+    'การออม': Colors.blue,
+  };
 
   // สร้างข้อมูลสำหรับ Pie Chart
   return dataMap.entries.map((entry) {
-    final percentage = (entry.value /
-            dataMap.values.reduce((a, b) => a + b) *
-            100)
-        .toStringAsFixed(1);
+    final totalAmount = dataMap.values.reduce((a, b) => a + b);
+    final percentage = (entry.value / totalAmount * 100).toStringAsFixed(1);
+    final formattedAmount = entry.value.toStringAsFixed(2);
+
+    // สร้าง title ตามเงื่อนไขที่เลือก
+    String title = entry.key;
+    if (showAmount && showPercentage) {
+      title += '\n$formattedAmount บาท\n$percentage%';
+    } else if (showAmount) {
+      title += '\n$formattedAmount บาท';
+    } else if (showPercentage) {
+      title += '\n$percentage%';
+    }
 
     return PieChartSectionData(
-      color: colors[index % colors.length],
+      color: colorMap[entry.key]!,  // ใช้สีที่กำหนดไว้ตามประเภท
       value: entry.value,
-      title: '${entry.key}\n$percentage%',
+      title: title,  // ใช้ title ที่สร้างตามเงื่อนไข
       radius: 100,
       titleStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
     );
