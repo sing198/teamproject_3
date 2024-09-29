@@ -7,23 +7,49 @@ class FinancialProvider with ChangeNotifier {
 
   List<FinancialRecord> get records => _records;
 
+  // ดึงข้อมูลบันทึกการเงิน
   Future<void> fetchRecords() async {
-    _records = await DatabaseService().getFinancialRecords();
-    notifyListeners();
+    try {
+      _records = await DatabaseService().getFinancialRecords();
+      notifyListeners();
+    } catch (e) {
+      print("Error fetching records: $e");
+    }
   }
 
-  void addRecord(FinancialRecord record) {
-    DatabaseService().addFinancialRecord(record);
-    fetchRecords();
+  // เพิ่มบันทึกการเงิน
+  Future<void> addRecord(FinancialRecord record) async {
+    try {
+      await DatabaseService().addFinancialRecord(record);
+      _records.add(record);
+      notifyListeners();
+    } catch (e) {
+      print("Error adding record: $e");
+    }
   }
 
-  void updateRecord(FinancialRecord record) {
-    DatabaseService().updateFinancialRecord(record);
-    fetchRecords();
+  // ฟังก์ชันใหม่: อัปเดตบันทึกการเงิน
+  Future<void> updateRecord(FinancialRecord updatedRecord) async {
+    try {
+      await DatabaseService().updateFinancialRecord(updatedRecord); // เรียกใช้ชื่อที่ถูกต้อง
+      int index = _records.indexWhere((record) => record.id == updatedRecord.id);
+      if (index != -1) {
+        _records[index] = updatedRecord; // อัปเดตข้อมูลในลิสต์
+        notifyListeners(); // แจ้งเตือน UI ให้ปรับปรุงข้อมูล
+      }
+    } catch (e) {
+      print("Error updating record: $e");
+    }
   }
 
-  void deleteRecord(String id) {
-    DatabaseService().deleteFinancialRecord(id);
-    fetchRecords();
+  // ฟังก์ชันใหม่: ลบบันทึกการเงิน
+  Future<void> deleteRecord(String id) async {
+    try {
+      await DatabaseService().deleteFinancialRecord(id); // เรียกใช้ชื่อที่ถูกต้อง
+      _records.removeWhere((record) => record.id == id); // ลบข้อมูลจากลิสต์
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting record: $e");
+    }
   }
 }

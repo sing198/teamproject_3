@@ -6,7 +6,7 @@ import 'package:teamproject_3/providers/financial_provider.dart';
 class EditRecordScreen extends StatefulWidget {
   final FinancialRecord record;
 
-  EditRecordScreen({required this.record});
+  const EditRecordScreen({super.key, required this.record});
 
   @override
   _EditRecordScreenState createState() => _EditRecordScreenState();
@@ -30,21 +30,21 @@ class _EditRecordScreenState extends State<EditRecordScreen> {
     final financialData = Provider.of<FinancialProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text('แก้ไขรายการ')),
+      appBar: AppBar(title: const Text('แก้ไขรายการ')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 initialValue: description,
-                decoration: InputDecoration(labelText: 'รายละเอียด'),
+                decoration: const InputDecoration(labelText: 'รายละเอียด'),
                 onChanged: (val) => description = val,
               ),
               TextFormField(
                 initialValue: amount.toString(),
-                decoration: InputDecoration(labelText: 'จำนวนเงิน'),
+                decoration: const InputDecoration(labelText: 'จำนวนเงิน'),
                 keyboardType: TextInputType.number,
                 onChanged: (val) => amount = double.parse(val),
               ),
@@ -52,13 +52,13 @@ class _EditRecordScreenState extends State<EditRecordScreen> {
                 value: type,
                 items: ['รายรับ', 'รายจ่าย', 'การออม']
                     .map((label) => DropdownMenuItem(
-                          child: Text(label),
                           value: label,
+                          child: Text(label),
                         ))
                     .toList(),
                 onChanged: (val) => type = val!,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   final updatedRecord = FinancialRecord(
@@ -72,14 +72,14 @@ class _EditRecordScreenState extends State<EditRecordScreen> {
                   financialData.updateRecord(updatedRecord);
                   Navigator.pop(context);
                 },
-                child: Text('บันทึกการเปลี่ยนแปลง'),
+                child: const Text('บันทึกการเปลี่ยนแปลง'),
               ),
               TextButton(
                 onPressed: () {
                   financialData.deleteRecord(widget.record.id);
                   Navigator.pop(context);
                 },
-                child: Text('ลบรายการ', style: TextStyle(color: Colors.red)),
+                child: const Text('ลบรายการ', style: TextStyle(color: Colors.red)),
               ),
             ],
           ),

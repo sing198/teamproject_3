@@ -18,17 +18,7 @@ class FinancialRecord {
       'description': description,
       'amount': amount,
       'type': type,
-      'date': date.toIso8601String(), // แปลง date เป็นรูปแบบ ISO string
+      'date': date.toIso8601String(), // Convert date to ISO format
     };
-  }
-
-  factory FinancialRecord.fromMap(String id, Map<String, dynamic> map) {
-    return FinancialRecord(
-      id: id,
-      description: map['description'],
-      amount: map['amount'],
-      type: map['type'],
-      date: DateTime.parse(map['date']), // แปลง string เป็น DateTime
-    );
   }
 }

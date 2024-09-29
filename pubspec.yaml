@@ -1,7 +1,7 @@
 name: teamproject_3
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 0.1.0+1
 
 environment:
   sdk: ^3.5.1
@@ -15,8 +15,9 @@ dependencies:
   firebase_core: ^3.4.1
   provider: ^6.1.2
   intl: ^0.19.0
-
+  shared_preferences: ^2.3.2
   
+
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +26,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - lib/assets/tree.jpg
+    - lib/assets/background.jpg
+
