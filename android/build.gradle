@@ -1,3 +1,15 @@
+// android/build.gradle
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.2' // ตัวอย่างการใช้ Android Gradle Plugin เวอร์ชันที่ใช้งานได้
+        classpath 'com.google.gms:google-services:4.3.10' // เพิ่ม Google Services Classpath
+    }
+}
+
 allprojects {
     repositories {
         google()

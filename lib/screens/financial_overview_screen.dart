@@ -8,6 +8,7 @@ import 'package:teamproject_3/providers/financial_provider.dart';
 import 'package:teamproject_3/screens/add_record_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:teamproject_3/screens/UserProfileScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FinancialOverviewScreen extends StatefulWidget {
   const FinancialOverviewScreen({super.key});
@@ -18,7 +19,7 @@ class FinancialOverviewScreen extends StatefulWidget {
 }
 
 class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
-  bool _isLoading = true; // สถานะการโหลด
+  bool _isLoading = true; 
 
   @override
   void initState() {
@@ -32,13 +33,12 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
     try {
       final financialData =
           Provider.of<FinancialProvider>(context, listen: false);
-      await financialData.fetchRecords(); // ดึงข้อมูล
+      await financialData.fetchRecords(); 
     } catch (e) {
-      // จัดการกรณีมีข้อผิดพลาดในการดึงข้อมูล
       print('Error fetching financial data: $e');
     } finally {
       setState(() {
-        _isLoading = false; // หยุดการโหลดเมื่อดึงข้อมูลเสร็จ
+        _isLoading = false;
       });
     }
   }
@@ -46,23 +46,26 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     final financialData = Provider.of<FinancialProvider>(context);
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        title: const Text('สรุปการเงิน'),
-        backgroundColor: Colors.blueAccent,
+        title: const Text('สรุปการเงิน', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
         actions: [
           IconButton(
             icon: CircleAvatar(
-              backgroundImage: AssetImage('assets/images/profile_pic.png'), // หรือใช้ NetworkImage ถ้ารูปมาจาก URL
+              backgroundImage: user?.photoURL != null
+                  ? NetworkImage(user!.photoURL!)
+                  : const AssetImage('lib/assets/image/profile_pic.png') as ImageProvider,
               radius: 15,
             ),
             onPressed: () {
-              // เมื่อกดที่ไอคอนโปรไฟล์ ให้ไปที่หน้าจอโปรไฟล์
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => UserProfileScreen(), // ไปที่หน้าจอโปรไฟล์ผู้ใช้
+                  builder: (context) => UserProfileScreen(),
                 ),
               );
             },
@@ -70,97 +73,138 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) // แสดง loading
+          ? const Center(child: CircularProgressIndicator())
           : financialData.records.isEmpty
-              ? const Center(
-                  child: Text('ไม่มีข้อมูลการเงิน กรุณาเพิ่มรายการ',
-                      style: TextStyle(fontSize: 18, color: Colors.grey)),
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'lib/assets/image/Cat_nomoney.png',
+                        height: 150, 
+                        width: 150,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'ไม่มีข้อมูลการเงิน กรุณาเพิ่มรายการ',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 )
               : Column(
                   children: [
-                    // ส่วนที่แสดง Pie Chart
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: PieChart(
-                          PieChartData(
-                            sections: _createChartData(financialData.records),
-                            centerSpaceRadius: 60,
-                            sectionsSpace: 4,
-                          ),
+                    const SizedBox(height: 10),
+                    // Pie Chart section
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      height: 200, 
+                      child: PieChart(
+                        PieChartData(
+                          sections: _createChartData(financialData.records),
+                          centerSpaceRadius: 60, 
+                          sectionsSpace: 2,
+                          borderData: FlBorderData(show: false),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20), // เพิ่มช่องว่างระหว่างกราฟและปุ่ม
                     // ปุ่มดูรายละเอียด
-                    _buildButton(context, 'ดูรายละเอียด', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FinancialDetailsScreen(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FinancialDetailsScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          textStyle: const TextStyle(fontSize: 18),
                         ),
-                      );
-                    }),
-                    const SizedBox(height: 10),
+                        child: const Text('ดูรายละเอียด', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                    const SizedBox(height: 10), // เพิ่มช่องว่างระหว่างปุ่ม
                     // ปุ่มวางแผนการเงิน
-                    _buildButton(context, 'วางแผนการเงิน', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FinancialPlannerApp(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FinancialPlannerApp(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          textStyle: const TextStyle(fontSize: 18),
                         ),
-                      );
-                    }),
+                        child: const Text('วางแผนการเงิน', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
                     const SizedBox(height: 10),
-                    // ส่วนที่แสดงรายการทรานแซคชัน
+                    // รายการทรานแซคชัน
                     Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListView.builder(
-                          itemCount: financialData.records.length,
-                          itemBuilder: (context, index) {
-                            final record = financialData.records[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              elevation: 4,
-                              child: ListTile(
-                                leading: Icon(
-                                  record.type == 'รายรับ'
-                                      ? Icons.arrow_downward
-                                      : record.type == 'รายจ่าย'
-                                          ? Icons.arrow_upward
-                                          : Icons.savings,
-                                  color: record.type == 'รายรับ'
-                                      ? Colors.green
-                                      : record.type == 'รายจ่าย'
-                                          ? Colors.red
-                                          : Colors.blue,
-                                ),
-                                title: Text(record.type,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                                subtitle: Text(
-                                    '${DateFormat('dd/MM/yyyy').format(record.date)} - ${record.description}'),
-                                trailing: Text(
-                                  '${record.amount.toStringAsFixed(2)} บาท',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: record.type == 'รายรับ'
-                                          ? Colors.green
-                                          : Colors.red),
-                                ),
+                      child: ListView.builder(
+                        itemCount: financialData.records.length,
+                        itemBuilder: (context, index) {
+                          final record = financialData.records[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            color: Colors.grey[850],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 5,
+                            child: ListTile(
+                              leading: Icon(
+                                record.type == 'รายรับ'
+                                    ? Icons.arrow_downward
+                                    : record.type == 'รายจ่าย'
+                                        ? Icons.arrow_upward
+                                        : Icons.savings,
+                                color: record.type == 'รายรับ'
+                                    ? Colors.green
+                                    : record.type == 'รายจ่าย'
+                                        ? Colors.red
+                                        : Colors.blue,
                               ),
-                            );
-                          },
-                        ),
+                              title: Text(record.type,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              subtitle: Text(
+                                '${DateFormat('dd/MM/yyyy').format(record.date)} - ${record.description}',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              trailing: Text(
+                                '${record.amount.toStringAsFixed(2)} บาท',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: record.type == 'รายรับ'
+                                        ? Colors.green
+                                        : record.type == 'รายจ่าย'
+                                            ? Colors.red
+                                            : Colors.blue),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.purple,
+        child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(
             context,
@@ -168,26 +212,11 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
           );
         },
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, 
     );
   }
 
-  Widget _buildButton(BuildContext context, String title, VoidCallback onPressed) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blueAccent,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          textStyle: const TextStyle(fontSize: 18),
-        ),
-        child: Text(title),
-      ),
-    );
-  }
-
-  List<PieChartSectionData> _createChartData(List<FinancialRecord> records,
-      {bool showPercentage = true, bool showAmount = true}) {
+  List<PieChartSectionData> _createChartData(List<FinancialRecord> records) {
     Map<String, double> dataMap = {
       'รายรับ': 0,
       'รายจ่าย': 0,
@@ -209,22 +238,15 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
       final percentage = (entry.value / totalAmount * 100).toStringAsFixed(1);
       final formattedAmount = entry.value.toStringAsFixed(2);
 
-      String title = entry.key;
-      if (showAmount && showPercentage) {
-        title += '\n$formattedAmount บาท\n$percentage%';
-      } else if (showAmount) {
-        title += '\n$formattedAmount บาท';
-      } else if (showPercentage) {
-        title += '\n$percentage%';
-      }
+      String title = '${entry.key}\n$formattedAmount\n$percentage%';
 
       return PieChartSectionData(
         color: colorMap[entry.key]!,
         value: entry.value,
         title: title,
-        radius: 100,
+        radius: 50, 
         titleStyle: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
       );
     }).toList();
   }
